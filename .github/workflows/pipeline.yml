@@ -36,7 +36,7 @@ jobs:
       needs: [simple_deployment_pipeline]
       name: Deploy app
       runs-on: ubuntu-20.04
-      if: ${{ github.event_name == 'push' && !contains(joingithub.event.commits.*.message), '#skip') }}
+      if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message), '#skip') }}
       steps:
         - uses: actions/checkout@v3
         - uses: superfly/flyctl-actions/setup-flyctl@master
