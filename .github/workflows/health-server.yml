@@ -7,7 +7,7 @@ on:
         - cron: '0/10 * * * *'      
 
 jobs:
-    simple_deployment_pipeline:
+    check_the_server:
       runs-on: ubuntu-20.04
       steps:        
         - name: Check if backend is alive
