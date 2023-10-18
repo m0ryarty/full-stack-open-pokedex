@@ -31,28 +31,46 @@ jobs:
             command: npm run test:e2e
             start: npm run start-prod
             wait-on: http://localhost:5000
-            
-    backend_check:
-      needs: [simple_deployment_pipeline]
-      runs-on: ubuntu-20.04
-      steps:
         - name: Check if backend is alive
           uses: jtalk/url-health-check-action@v3
           with:            
             url: http://localhost:5000
             max-attempts: 3 
             retry-delay: 5s
+
     deploy:
       needs: [simple_deployment_pipeline]
-      name: Deploy app
       runs-on: ubuntu-20.04
       if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message), '#skip') }}
       steps:
         - uses: actions/checkout@v3
         - uses: superfly/flyctl-actions/setup-flyctl@master
-        - run: flyctl deploy --remote-only
+        - name: Deploy app
+          run: flyctl deploy --remote-only
           env:
-            FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+              FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        - name: Deploy Success
+          uses: rjstone/discord-webhook-notify@v1
+          if: success()
+          with:
+            severity: info
+            username: Moryarty
+            color: '#ff00aa'
+            avatarUrl: https://github.githubassets.com/images/modules/logos_page/Octocat.png
+            description: This is a success notification and...
+            details: Indeed, succeeded!                
+            webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+        - name: Deploy Error
+          uses: rjstone/discord-webhook-notify@v1
+          if: failure()
+          with:
+            severity: error
+            username: Moryarty
+            color: '#ff00aa'
+            avatarUrl: https://github.githubassets.com/images/modules/logos_page/Octocat.png
+            description: This is a eror notification and...
+            details: ${{ toJson(github.event.commits) }}                
+            webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
 
     versioning:
       needs: [deploy]      
@@ -69,32 +87,6 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             DEFAULT_BUMP: patch
 
-    notifications:
-        if: ${{!contains(join(github.event.commits.*.message), '#NoNotification')}}
-        needs: [deploy]
-        name: Discord Notification
-        runs-on: ubuntu-20.04
-        steps:
-          - name: Deploy Success
-            uses: rjstone/discord-webhook-notify@v1
-            if: success()
-            with:
-                  severity: info
-                  username: Moryarty
-                  color: '#ff00aa'
-                  avatarUrl: https://github.githubassets.com/images/modules/logos_page/Octocat.png
-                  description: This is a success notification and...
-                  details: Indeed, succeeded!                
-                  webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-          - name: Deploy Error
-            uses: rjstone/discord-webhook-notify@v1
-            if: failure()
-            with:
-                  severity: error
-                  username: Moryarty
-                  color: '#ff00aa'
-                  avatarUrl: https://github.githubassets.com/images/modules/logos_page/Octocat.png
-                  description: This is a eror notification and...
-                  details: ${{ toJson(github.event.commits) }}                
-                  webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+   
+          
                     
