@@ -13,6 +13,17 @@ jobs:
         - name: Check if backend is alive
           uses: jtalk/url-health-check-action@v3
           with:            
-            url: https://autumn-flower-9884.fly.dev/
+            url: https://autumn-flower-9884.fly/
             max-attempts: 3 
             retry-delay: 5s
+        - name: Server Error
+          uses: rjstone/discord-webhook-notify@v1
+          if: failure()
+          with:
+                severity: error
+                username: Moryarty
+                color: '#ff00aa'
+                avatarUrl: https://github.githubassets.com/images/modules/logos_page/Octocat.png
+                description: This is a eror notification and...
+                details: ${{ github.event.description }}                
+                webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
