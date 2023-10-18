@@ -33,6 +33,7 @@ jobs:
             wait-on: http://localhost:5000
             
     backend_check:
+      needs: [simple_deployment_pipeline]
       runs-on: ubuntu-20.04
       steps:
         - name: Check if backend is alive
