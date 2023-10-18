@@ -31,12 +31,7 @@ jobs:
             command: npm run test:e2e
             start: npm run start-prod
             wait-on: http://localhost:5000
-        - name: Check if backend is alive
-          uses: jtalk/url-health-check-action@v3
-          with:            
-            url: http://localhost:5000
-            max-attempts: 3 
-            retry-delay: 5s
+        
 
     deploy:
       needs: [simple_deployment_pipeline]
@@ -46,7 +41,7 @@ jobs:
         - uses: actions/checkout@v3
         - uses: superfly/flyctl-actions/setup-flyctl@master
         - name: Deploy app
-          run: flyctl deplay --remote-only
+          run: flyctl deploy --remote-only
           env:
               FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         - name: Deploy Success
@@ -69,14 +64,12 @@ jobs:
             color: '#ff00aa'
             avatarUrl: https://github.githubassets.com/images/modules/logos_page/Octocat.png
             description: This is a eror notification and...
-            details: ${{ toJson(github.event.commits) }}                
+            details: ${{ github.event.description }}                
             webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
 
     versioning:
       needs: [deploy]      
-      runs-on: ubuntu-22.04        
-      if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message), '#skip') }}
-      
+      runs-on: ubuntu-22.04
       steps:
         - uses: actions/checkout@v3
           with:

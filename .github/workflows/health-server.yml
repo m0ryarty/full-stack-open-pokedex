@@ -1,0 +1,16 @@
+name: Deployment pipeline
+
+on:
+  schedule:
+    - cron: '0/10 * * * *'      
+
+jobs:
+    simple_deployment_pipeline:
+      runs-on: ubuntu-20.04
+      steps:        
+        - name: Check if backend is alive
+          uses: jtalk/url-health-check-action@v3
+          with:            
+            url: https://autumn-flower-9884.fly.dev/
+            max-attempts: 3 
+            retry-delay: 5s
